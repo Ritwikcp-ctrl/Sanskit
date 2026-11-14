@@ -241,6 +241,56 @@ kriya abs (karta: n: sankhya) -> sankhya {
 ```
 
 ## 7. Memory Model v0.1 (PROPOSED - refine after interpreter)
+This is the most novel part of Vak . It ties memory safety to karaka roles .Here is the v0.1 rule:
+
+```
+Kāraka	      Ownership behavior	                       Meaning
+kartā	       Move — caller 	                            The function 
+                loses owenership                            owns the value 
+
+                                          
+sampradāna	   Move — caller loses                          The function 
+               ownership                                     owns the value
+
+karma          Mutable borrow-                              Temporary read-write access
+               caller keeps ownership, function  
+               may modify
+
+karana        Immutable borrow-                             shared read-only
+              caller keeps ownership, function
+              can't modify.
+apadana       Immutable borrow                               shared read-only
+
+adhikaraṇa    Immutable borrow                               shared read-only
+
+```
+
+Return values arw owned by the caller (they become the caller's karta when used).
+
+## Example
+
+```text
+kriya consume(karta: x: sabda) -> sunya{
+    mudrana(karma: x);
+}
+
+cara name: sabda = "Rama";
+consume(karta: name);  // name is MOVED - caller loses it
+mudrana(karma:name);  // ERROR: name has been moved
+been moved
+
+```
+```text
+kriya insepct (karana: x: sabda) -> sunya {
+    mudrana(karma:x);
+}
+cara name: sabda = "Rama";
+inspect(karana: name);    // name is BORROWED (read-only)
+mudrana (karma: name);   // OK: name is still owned by caller
+
+```
+
+For v0.1 interpreter: Enforce moves and borrows at runtime with a simple ownership table. This is not a full compile-time borrow checker yet -- that comes in v0.2 with the transpiler. But we design the rules now so the grammer reflects them.
 
 
 
